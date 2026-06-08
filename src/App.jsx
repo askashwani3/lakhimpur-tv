@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Routes, Route, useParams } from "react-router-dom";
+import { Link, Routes, Route, useParams, useLocation } from "react-router-dom";
 
 const menu = [
   ["🏠", "होम", "/"],
@@ -129,15 +129,12 @@ function Header({ openMenu }) {
           </button>
 
          <div className="flex-1 flex justify-center">
-  <div className="bg-[#071225] px-6 py-3 rounded-3xl shadow-2xl border border-white/10">
-    <h1 className="text-3xl font-black tracking-wider text-white text-center">
-      LAKHIMPUR
-      <span className="text-red-500"> TV</span>
-    </h1>
-
-    <p className="text-[11px] text-slate-300 text-center font-semibold mt-1">
-      अपने गांव का डिजिटल मीडिया
-    </p>
+  <div className="bg-white rounded-3xl p-2 shadow-2xl">
+    <img
+      src="/logo.png"
+      alt="Lakhimpur TV"
+      className="h-16 w-auto"
+    />
   </div>
 </div>
 
@@ -146,15 +143,26 @@ function Header({ openMenu }) {
           </button>
         </div>
 
-        <div className="mt-4 flex gap-2 rounded-3xl bg-white p-2 shadow-xl">
-          <input
-            className="min-w-0 flex-1 px-3 text-sm font-semibold text-slate-900 outline-none"
-            placeholder="खबर, तथ्य या गांव खोजें..."
-          />
-          <button className="rounded-2xl bg-[#E11D48] px-4 py-3 text-sm font-black text-white">
-            खोजें
-          </button>
-        </div>
+       <div className="mt-4 flex gap-2 rounded-3xl bg-white p-2 shadow-xl">
+  <input
+    id="siteSearch"
+    className="min-w-0 flex-1 px-3 text-sm font-semibold text-slate-900 outline-none"
+    placeholder="कुछ खोजें..."
+  />
+
+  <button
+    onClick={() => {
+      const value = document.getElementById("siteSearch").value;
+      window.location.href = "/news?search=" + value;
+    }}
+    className="rounded-2xl bg-[#E11D48] px-4 py-3 text-sm font-black text-white"
+  >
+    खोजें
+  </button>
+</div>
+<p className="mt-2 text-xs text-slate-400">
+  🔍 उदाहरण: दुधवा, इतिहास, गन्ना, गोला
+</p>
       </div>
     </header>
   );
@@ -237,13 +245,33 @@ function Home() {
         </div>
       </section>
 
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xl font-black">📰 ताजा अपडेट</h2>
-          <Link to="/news" className="text-sm font-bold text-rose-600">
-            सभी देखें
-          </Link>
-        </div>
+     <section className="mb-5 rounded-3xl bg-green-600 p-5 text-white shadow-xl">
+  <h2 className="text-xl font-black">
+    📱 Lakhimpur TV WhatsApp Channel
+  </h2>
+
+  <p className="mt-2 text-sm text-green-50">
+    लखीमपुर खीरी की खबरें, शिक्षा, तथ्य और जॉब अपडेट सबसे पहले पाएं।
+  </p>
+
+  <a
+    href="https://whatsapp.com/channel/0029VbDfKhZFMqrai1DlAc38"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-4 inline-block rounded-2xl bg-white px-5 py-3 font-black text-green-700"
+  >
+    🚀 WhatsApp Channel Join करें
+  </a>
+</section>
+
+<section>
+  <div className="mb-3 flex items-center justify-between">
+    <h2 className="text-xl font-black">📰 ताजा अपडेट</h2>
+    <Link to="/news" className="text-sm font-bold text-rose-600">
+      सभी देखें
+    </Link>
+  </div>
+     
 
         <div className="space-y-4">
           {newsData.map((item) => (
@@ -278,10 +306,24 @@ function Home() {
 }
 
 function News() {
+  const location = useLocation();
+
+const searchTerm =
+  new URLSearchParams(location.search).get("search") || "";
+  const filteredNews = newsData.filter(
+  (item) =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.desc.toLowerCase().includes(searchTerm.toLowerCase())
+);
   return (
     <main className="space-y-4 p-4">
       <h2 className="text-2xl font-black">📰 ताज़ा खबरें</h2>
-      {newsData.map((item) => (
+      {filteredNews.length === 0 && (
+  <div className="rounded-3xl bg-white p-6 text-center shadow-lg">
+    😔 कोई खबर नहीं मिली
+  </div>
+)}
+      {filteredNews.map((item) => (
         <div
           key={item.id}
           className="overflow-hidden rounded-3xl bg-white shadow-lg"
@@ -342,9 +384,23 @@ function NewsDetails() {
             </div>
           </div>
 
-          <button className="mt-5 rounded-2xl bg-green-600 px-4 py-3 font-bold text-white">
-            WhatsApp पर शेयर करें
-          </button>
+          <a
+  href={`https://wa.me/?text=${encodeURIComponent(
+    `📰 ${news.title}
+
+${news.desc}
+
+📍 Lakhimpur TV
+
+पूरी खबर पढ़ें:
+${window.location.href}`
+  )}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-5 inline-block rounded-2xl bg-green-600 px-4 py-3 font-bold text-white"
+>
+  📱 WhatsApp पर शेयर करें
+</a>
         </div>
       </div>
     </main>
@@ -559,7 +615,7 @@ function Contact() {
   );
 }
 
-function About() {
+function About() {``
   return (
     <main className="p-4">
       <div className="bg-white rounded-3xl p-6 shadow-lg">
