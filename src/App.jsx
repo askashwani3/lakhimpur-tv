@@ -18,7 +18,7 @@ const menu = [
   ["📞", "संपर्क", "/contact"],
   ["ℹ️", "हमारे बारे में", "/about"],
 ];
-const newsData = [
+const defaultNewsData = [
   {
     id: 1,
     title: "दुधवा नेशनल पार्क: लखीमपुर की शान",
@@ -138,11 +138,12 @@ function Header({ openMenu }) {
   </div>
 </div>
 
-          <button className="h-11 w-11 rounded-2xl bg-white/10 text-2xl flex items-center justify-center">
-            🔔
-          </button>
-        </div>
-
+         <Link
+  to="/admin"
+  className="h-11 px-3 rounded-2xl bg-rose-600 text-xs font-black flex items-center justify-center"
+>
+  Admin
+</Link>
        <div className="mt-4 flex gap-2 rounded-3xl bg-white p-2 shadow-xl">
   <input
     id="siteSearch"
@@ -160,15 +161,14 @@ function Header({ openMenu }) {
     खोजें
   </button>
 </div>
-<p className="mt-2 text-xs text-slate-400">
-  🔍 उदाहरण: दुधवा, इतिहास, गन्ना, गोला
-</p>
+
+        </div>
       </div>
     </header>
   );
 }
 
-function Home() {
+function Home({ newsData }) {
   return (
     <main className="space-y-5 p-4">
       <section className="rounded-[36px] overflow-hidden shadow-2xl">
@@ -288,7 +288,17 @@ function Home() {
                 <span className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-600">
                   {item.category}
                 </span>
+                {item.breaking && (
+  <span className="ml-2 rounded-lg bg-red-600 px-2 py-1 text-xs font-bold text-white animate-pulse">
+    🚨 BREAKING
+  </span>
+)}
                 <h3 className="mt-3 text-lg font-black">{item.title}</h3>
+                {item.date && (
+  <p className="mt-2 text-xs font-bold text-slate-500">
+    🕒 {item.date}
+  </p>
+)}
                 <p className="mt-2 text-sm text-slate-600">{item.desc}</p>
                 <Link
                   to={`/news/${item.id}`}
@@ -305,7 +315,7 @@ function Home() {
   );
 }
 
-function News() {
+function News({ newsData }) {
   const location = useLocation();
 
 const searchTerm =
@@ -330,6 +340,7 @@ const searchTerm =
         >
           <img src={item.image} className="h-40 w-full object-cover" />
           <div className="p-4">
+            <div className="flex items-center gap-2 flex-wrap"></div>
             <span className="rounded-lg bg-rose-100 px-2 py-1 text-xs font-bold text-rose-600">
               {item.category}
             </span>
@@ -348,7 +359,7 @@ const searchTerm =
   );
 }
 
-function NewsDetails() {
+function NewsDetails({ newsData }) {
   const { id } = useParams();
   const news = newsData.find((n) => n.id === Number(id)) || newsData[0];
 
@@ -573,7 +584,224 @@ function Shiksha() {
     </main>
   );
 }
+function AdminPage({ newsData, setNewsData }) {
+  const [password, setPassword] = useState("");
+  const ADMIN_PASSWORD = "lakhimpur123";
+const [fileName, setFileName] = useState("");
+const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState({
+    title: "",
+    category: "ताजा खबर",
+    desc: "",
+    image: "",
+    content: "",
+    facts: "",
+    breaking: false,
+date: "",
+  });
+  const [preview, setPreview] = useState("");
 
+  if (password !== ADMIN_PASSWORD) {
+    return (
+      <main className="p-4">
+        <div className="rounded-3xl bg-white p-5 shadow-lg max-w-md mx-auto">
+          <h1 className="text-2xl font-black mb-4">🔐 Admin Login</h1>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-xl border p-3"
+          />
+          <p className="mt-3 text-sm text-slate-500">Admin password डालें</p>
+        </div>
+      </main>
+    );
+  }
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const publishNews = (e) => {
+  e.preventDefault();
+
+  if (editId) {
+    const updatedNews = newsData.map((item) =>
+      item.id === editId
+        ? {
+            ...item,
+            title: form.title,
+            category: form.category,
+            desc: form.desc,
+            image: form.image,
+            content: form.content.split("\n"),
+            facts: form.facts.split("\n"),
+          }
+        : item
+    );
+
+    setNewsData(updatedNews);
+    localStorage.setItem("lakhimpurNews", JSON.stringify(updatedNews));
+    setEditId(null);
+    alert("News update हो गई ✅");
+  } else {
+    const newNews = {breaking: form.breaking,
+date: new Date().toLocaleString("hi-IN"),
+      id: Date.now(),
+      title: form.title,
+      category: form.category,
+      desc: form.desc,
+      image: form.image,
+      content: form.content.split("\n"),
+      facts: form.facts.split("\n"),
+    };
+
+    const updatedNews = [newNews, ...newsData];
+    setNewsData(updatedNews);
+    localStorage.setItem("lakhimpurNews", JSON.stringify(updatedNews));
+    alert("News publish हो गई ✅");
+  }
+
+  setForm({
+    title: "",
+    category: "ताजा खबर",
+    desc: "",
+    image: "",
+    content: "",
+    facts: "",
+  });
+};
+  const deleteNews = (id) => {
+    const updatedNews = newsData.filter((item) => item.id !== id);
+    setNewsData(updatedNews);
+    localStorage.setItem("lakhimpurNews", JSON.stringify(updatedNews));
+  };
+  const editNews = (item) => {
+  setEditId(item.id);
+
+  setForm({
+    title: item.title,
+    category: item.category,
+    desc: item.desc,
+    image: item.image,
+    content: item.content.join("\n"),
+    facts: item.facts.join("\n"),
+     breaking: item.breaking,
+    date: item.date || new Date().toLocaleString("hi-IN"),
+  });
+
+  window.scrollTo(0, 0);
+};
+
+  return (
+    <main className="p-4">
+      <div className="rounded-3xl bg-white p-5 shadow-lg">
+        <h1 className="text-2xl font-black mb-4">🔐 Admin Panel</h1>
+
+        <form onSubmit={publishNews} className="space-y-3">
+          <input name="title" value={form.title} onChange={handleChange} required placeholder="News Title" className="w-full rounded-xl border p-3" />
+
+          <select name="category" value={form.category} onChange={handleChange} className="w-full rounded-xl border p-3">
+            <option>ताजा खबर</option>
+            <option>लखीमपुर समाचार</option>
+            <option>शिक्षा</option>
+            <option>रोजगार</option>
+            <option>तथ्य</option>
+            <option>मोटिवेशन</option>
+            <option>मौसम</option>
+            <option>राशिफल</option>
+          </select>
+          <label className="flex items-center gap-3 rounded-xl bg-red-50 p-3 font-bold text-red-600">
+  <input
+    type="checkbox"
+    checked={form.breaking}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        breaking: e.target.checked,
+      })
+    }
+  />
+  🚨 Breaking News
+</label>
+
+          <label className="flex cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-rose-400 bg-rose-50 p-5 text-rose-600 font-black">
+
+  🖼️ Gallery Se Photo Select Kare
+
+  <input
+    type="file"
+    accept="image/*"
+    hidden
+    onChange={(e) => {
+      const file = e.target.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+          setForm({
+            ...form,
+            image: reader.result,
+          });
+
+          setPreview(reader.result);
+        };
+
+        reader.readAsDataURL(file);
+      }
+    }}
+  />
+</label>
+
+{form.image && (
+  <div className="mt-3">
+    <img
+      src={form.image}
+      alt="Preview"
+      className="w-full max-h-64 object-cover rounded-2xl border"
+    />
+  </div>
+)}
+
+          <textarea name="desc" value={form.desc} onChange={handleChange} required placeholder="Short Description" className="w-full rounded-xl border p-3" />
+
+          <textarea name="content" value={form.content} onChange={handleChange} required placeholder="पूरी खबर लिखें - हर लाइन नया paragraph बनेगा" className="w-full rounded-xl border p-3 min-h-32" />
+
+          <textarea name="facts" value={form.facts} onChange={handleChange} placeholder="Fact File - हर line अलग fact" className="w-full rounded-xl border p-3" />
+
+          <button className="w-full rounded-2xl bg-rose-600 py-3 font-black text-white">
+           {editId ? "Update News" : "Publish News"}
+          </button>
+        </form>
+
+        <div className="mt-8">
+          <h2 className="text-xl font-black mb-4">📰 Published News</h2>
+
+          {newsData.map((item) => (
+            <div key={item.id} className="mb-3 rounded-2xl border p-4">
+              <h3 className="font-black">{item.title}</h3>
+              <p className="text-sm text-slate-500">{item.category}</p>
+<button
+  onClick={() => editNews(item)}
+  className="mt-2 mr-2 rounded-xl bg-blue-600 px-4 py-2 text-white font-bold"
+>
+  ✏️ Edit
+</button>
+              <button
+                onClick={() => deleteNews(item.id)}
+                className="mt-2 rounded-xl bg-red-600 px-4 py-2 text-white font-bold"
+              >
+                🗑 Delete
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
 function SimplePage({ icon, title, text }) {
   return (
     <main className="p-4">
@@ -615,7 +843,7 @@ function Contact() {
   );
 }
 
-function About() {``
+function About() {
   return (
     <main className="p-4">
       <div className="bg-white rounded-3xl p-6 shadow-lg">
@@ -656,7 +884,10 @@ function About() {``
 
 function App() {
   const [open, setOpen] = useState(false);
-
+const [newsData, setNewsData] = useState(() => {
+  const saved = localStorage.getItem("lakhimpurNews");
+  return saved ? JSON.parse(saved) : defaultNewsData;
+});
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
       {open && (
@@ -690,9 +921,9 @@ function App() {
       <Header openMenu={() => setOpen(true)} />
 
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/news/:id" element={<NewsDetails />} />
+        <Route path="/" element={<Home newsData={newsData} />} />
+        <Route path="/news" element={<News newsData={newsData} />} />
+        <Route path="/news/:id" element={<NewsDetails newsData={newsData} />} />
         <Route path="/mausam" element={<Mausam />} />
         <Route path="/store" element={<Store />} />
         <Route path="/contact" element={<Contact />} />
@@ -707,6 +938,7 @@ function App() {
         <Route path="/videos" element={<SimplePage icon="🎥" title="वीडियो" text="वीडियो रिपोर्ट और अपडेट।" />} />
         <Route path="/manoranjan" element={<SimplePage icon="🎬" title="मनोरंजन" text="फिल्म, वायरल वीडियो और मनोरंजन अपडेट।" />} />
         <Route path="/kavitaye" element={<SimplePage icon="✍️" title="कविताएं" text="हिंदी कविताएं और प्रेरणादायक रचनाएं।" />} />
+        <Route path="/admin" element={<AdminPage newsData={newsData} setNewsData={setNewsData} />} />
       </Routes>
 
       <footer className="mt-6 bg-[#071225] p-5 text-center text-white">
