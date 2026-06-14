@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lakhimpur-tv.vercel.app/sitemap.xml
