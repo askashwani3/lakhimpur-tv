@@ -129,40 +129,40 @@ function Header({ openMenu }) {
             ☰
           </button>
 
-         <div className="flex-1 flex justify-center">
-  <div className="bg-white rounded-3xl p-2 shadow-2xl">
-    <img
-      src="/logo.png"
-      alt="Lakhimpur TV"
-      className="h-16 w-auto"
-    />
-  </div>
-</div>
+          <div className="flex-1 flex justify-center">
+            <div className="bg-white rounded-3xl p-2 shadow-2xl">
+              <img
+                src="/logo.png"
+                alt="Lakhimpur TV"
+                className="h-16 w-auto"
+              />
+            </div>
+          </div>
 
-         <Link
-  to="/admin"
-  className="h-11 px-3 rounded-2xl bg-rose-600 text-xs font-black flex items-center justify-center"
->
-  Admin
-</Link>
-       <div className="mt-4 flex gap-2 rounded-3xl bg-white p-2 shadow-xl">
-  <input
-    id="siteSearch"
-    className="min-w-0 flex-1 px-3 text-sm font-semibold text-slate-900 outline-none"
-    placeholder="कुछ खोजें..."
-  />
+          <Link
+            to="/admin"
+            className="h-11 px-3 rounded-2xl bg-rose-600 text-xs font-black flex items-center justify-center"
+          >
+            Admin
+          </Link>
+        </div>
 
-  <button
-    onClick={() => {
-      const value = document.getElementById("siteSearch").value;
-      window.location.href = "/news?search=" + value;
-    }}
-    className="rounded-2xl bg-[#E11D48] px-4 py-3 text-sm font-black text-white"
-  >
-    खोजें
-  </button>
-</div>
+        <div className="mt-4 flex gap-2 rounded-3xl bg-white p-2 shadow-xl">
+          <input
+            id="siteSearch"
+            className="min-w-0 flex-1 px-3 text-sm font-semibold text-slate-900 outline-none"
+            placeholder="कुछ खोजें..."
+          />
 
+          <button
+            onClick={() => {
+              const value = document.getElementById("siteSearch").value;
+              window.location.href = "/news?search=" + value;
+            }}
+            className="rounded-2xl bg-[#E11D48] px-4 py-3 text-sm font-black text-white"
+          >
+            खोजें
+          </button>
         </div>
       </div>
     </header>
