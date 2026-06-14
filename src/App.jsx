@@ -1,5 +1,6 @@
-import { useState } from "react";
+
 import { Link, Routes, Route, useParams, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const menu = [
   ["🏠", "होम", "/"],
@@ -451,22 +452,106 @@ function Store() {
 }
 
 function Mausam() {
+  const [weather, setWeather] = useState(null);
+  const [village, setVillage] = useState("लखीमपुर");
+  const [error, setError] = useState("");
+
+  const villages = {
+    लखीमपुर: { lat: 27.95, lon: 80.78 },
+    निघासन: { lat: 28.24, lon: 80.75 },
+    पलिया: { lat: 28.43, lon: 80.58 },
+    गोला: { lat: 28.08, lon: 80.47 },
+    मोहम्मदी: { lat: 27.95, lon: 80.2 },
+    धौरहरा: { lat: 27.99, lon: 81.09 },
+  };
+
+  const environmentQuotes = [
+    "पेड़ लगाइए, जीवन बचाइए।",
+    "प्रकृति की रक्षा ही भविष्य की सुरक्षा है।",
+    "स्वच्छ हवा सबसे बड़ी संपत्ति है।",
+    "जल, जंगल और जमीन — जीवन के असली आधार हैं।",
+    "पर्यावरण बचेगा, तभी आने वाला कल बचेगा।",
+  ];
+
+  const todayQuote =
+    environmentQuotes[new Date().getDate() % environmentQuotes.length];
+
+  useEffect(() => {
+    setWeather(null);
+    setError("");
+
+    const lat = villages[village].lat;
+    const lon = villages[village].lon;
+
+    fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FKolkata`
+    )
+      .then((res) => res.json())
+      .then((data) => setWeather(data))
+      .catch(() => setError("मौसम डेटा लोड नहीं हो पाया"));
+  }, [village]);
+
+  if (error) {
+    return <main className="p-4 font-bold text-red-600">{error}</main>;
+  }
+
+  if (!weather) {
+    return <main className="p-4 font-bold">🌦️ मौसम लोड हो रहा है...</main>;
+  }
+
   return (
     <main className="space-y-4 p-4">
+      <select
+        value={village}
+        onChange={(e) => setVillage(e.target.value)}
+        className="w-full rounded-2xl border p-3 font-bold"
+      >
+        {Object.keys(villages).map((v) => (
+          <option key={v}>{v}</option>
+        ))}
+      </select>
+
       <div className="rounded-3xl bg-gradient-to-br from-blue-600 to-cyan-500 p-6 text-white shadow-xl">
-        <p>📍 सिंघा खुर्द, निघासन</p>
-        <h2 className="mt-2 text-5xl font-black">36°C</h2>
-        <p className="mt-2 font-bold">आंशिक बादल</p>
+        <p>📍 {village}</p>
+        <h2 className="mt-2 text-5xl font-black">
+          {weather.current.temperature_2m}°C
+        </h2>
+        <p className="mt-2 font-bold">आज का मौसम अपडेट</p>
       </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-white p-4 shadow">
           <p>नमी</p>
-          <h3 className="text-xl font-black">65%</h3>
+          <h3 className="text-xl font-black">
+            {weather.current.relative_humidity_2m}%
+          </h3>
         </div>
+
         <div className="rounded-2xl bg-white p-4 shadow">
           <p>हवा</p>
-          <h3 className="text-xl font-black">12 km/h</h3>
+          <h3 className="text-xl font-black">
+            {weather.current.wind_speed_10m} km/h
+          </h3>
         </div>
+
+        <div className="rounded-2xl bg-white p-4 shadow">
+          <p>अधिकतम</p>
+          <h3 className="text-xl font-black">
+            {weather.daily.temperature_2m_max[0]}°C
+          </h3>
+        </div>
+
+        <div className="rounded-2xl bg-white p-4 shadow">
+          <p>न्यूनतम</p>
+          <h3 className="text-xl font-black">
+            {weather.daily.temperature_2m_min[0]}°C
+          </h3>
+        </div>
+      </div>
+
+      <div className="rounded-3xl bg-green-600 p-5 text-white shadow-xl">
+        <h2 className="text-xl font-black">🌿 आज का पर्यावरण विचार</h2>
+        <p className="mt-3 text-lg font-bold leading-8">"{todayQuote}"</p>
       </div>
     </main>
   );
